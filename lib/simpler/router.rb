@@ -17,19 +17,22 @@ module Simpler
 
     def route_for(env)
       method = env['REQUEST_METHOD'].downcase.to_sym
-      path = env['PATH_INFO']
-
-      @routes.find { |route| route.match?(method, path) }
+      path = env['PATH_INFO'].gsub(/\d++/, ':id')
+      @routes.find { |route| route.match?(method, path) } || routing_errors
     end
 
     private
+
+
+    def routing_errors
+      @routes.find { |route| route.match?(:get, "/not_found") }
+    end
 
     def add_route(method, path, route_point)
       route_point = route_point.split('#')
       controller = controller_from_string(route_point[0])
       action = route_point[1]
       route = Route.new(method, path, controller, action)
-
       @routes.push(route)
     end
 
